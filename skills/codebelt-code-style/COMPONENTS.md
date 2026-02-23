@@ -31,13 +31,14 @@ src/
 ├── services/
 │   └── hyperion/
 │       └── users/
-│           ├── users.ts
-│           ├── users.schemas.ts
-│           └── users.constants.ts
+│           ├── usersService.ts
+│           ├── usersService.schemas.ts
+│           └── usersService.constants.ts
 ├── styles/
 └── utils/
     └── date/
-        ├── date.ts               # No .utils.ts extension in utils/
+        ├── date.ts               # Main utility file (required)
+        ├── date.utils.ts         # Additional helpers (optional, only if date.ts exists)
         └── date.test.ts
 ```
 

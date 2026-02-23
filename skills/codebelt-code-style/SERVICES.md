@@ -11,26 +11,26 @@
 
 ## Service Structure
 
-Services have three files organized by provider and resource:
+Services have three files organized by provider and resource. Files use a `Service` suffix:
 
 ```text
 services/
 └── hyperion/           # Provider/API name
     └── users/          # Resource name
-        ├── users.ts              # Main functions + query hooks
-        ├── users.schemas.ts      # Zod validation schemas
-        └── users.constants.ts    # Query keys and static values
+        ├── usersService.ts              # Main functions + query hooks
+        ├── usersService.schemas.ts      # Zod validation schemas
+        └── usersService.constants.ts    # Query keys and static values
 ```
 
 ## Main Service File
 
 ```typescript
-// services/hyperion/users/users.ts
+// services/hyperion/users/usersService.ts
 import {useQuery} from '@tanstack/react-query';
 import {http} from '@/utils/httpClient/httpClient';
 import {api} from '@/utils/httpClient/httpClient.constants';
-import {getUsersKey} from './users.constants';
-import {GetUsersResponseSchema} from './users.schemas';
+import {getUsersKey} from './usersService.constants';
+import {GetUsersResponseSchema} from './usersService.schemas';
 
 /* POST /api/v1/users */
 export async function getUsers() {
@@ -55,7 +55,7 @@ Key rules:
 ## Schema File
 
 ```typescript
-// services/hyperion/users/users.schemas.ts
+// services/hyperion/users/usersService.schemas.ts
 import {z} from 'zod';
 
 export const GetUsersResponseSchema = z.object({
@@ -73,7 +73,7 @@ export type GetUsersResponseSchema = z.infer<typeof GetUsersResponseSchema>;
 ## Constants File
 
 ```typescript
-// services/hyperion/users/users.constants.ts
+// services/hyperion/users/usersService.constants.ts
 export const getUsersKey = 'getUsers';
 ```
 

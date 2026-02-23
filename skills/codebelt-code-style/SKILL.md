@@ -68,9 +68,9 @@ No default exports. No barrel files in application code.
 ### Creating a New Service
 
 1. Create folder: `services/{provider}/{serviceName}/`
-2. Create main file: `{serviceName}.ts` with fetch functions and query hooks
-3. Create schema file: `{serviceName}.schemas.ts` with Zod schemas
-4. Create constants file: `{serviceName}.constants.ts` with query keys
+2. Create main file: `{serviceName}Service.ts` with fetch functions and query hooks
+3. Create schema file: `{serviceName}Service.schemas.ts` with Zod schemas
+4. Create constants file: `{serviceName}Service.constants.ts` with query keys
 5. Verify: schema and type share same name, comment with HTTP method and path
 
 ### Creating a New Hook
@@ -82,8 +82,9 @@ No default exports. No barrel files in application code.
 ### Creating a New Utility
 
 1. Create folder: `utils/{utilName}/`
-2. Create utility file: `{utilName}.ts` (no `.utils.ts` suffix inside `utils/`)
-3. Create test file: `{utilName}.test.ts`
+2. Create main utility file: `{utilName}.ts`
+3. Optionally create helper file: `{utilName}.utils.ts` (for additional helpers, only if main file exists)
+4. Create test files: `{utilName}.test.ts` and/or `{utilName}.utils.test.ts`
 
 ---
 
