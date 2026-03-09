@@ -54,7 +54,7 @@ No default exports. No barrel files in application code.
 
 ### Component Files
 
-**One exported component per `.tsx` file.** Small private helper components (< 20 lines, non-exported) may be co-located.
+**One component per `.tsx` file — no exceptions.** Every component, no matter how small, gets its own subfolder and file.
 
 ---
 
@@ -86,9 +86,11 @@ No default exports. No barrel files in application code.
 ### Creating a New Utility
 
 1. Create folder: `utils/{utilName}/`
-2. Create main utility file: `{utilName}.ts`
-3. Optionally create helper file: `{utilName}.utils.ts` (for additional helpers, only if main file exists)
-4. Create test files: `{utilName}.test.ts` and/or `{utilName}.utils.test.ts`
+2. Create main utility file: `{utilName}.ts` — all helper functions go here (no `.utils.ts` file)
+3. Create constants file: `{utilName}.constants.ts` (if any)
+4. Create test file: `{utilName}.test.ts`
+
+> **Note:** Unlike components, utility folders do **not** use `.utils.ts` files. The main `{utilName}.ts` file itself is the utility — adding a `.utils.ts` beside it would be redundant.
 
 ---
 

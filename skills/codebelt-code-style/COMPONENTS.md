@@ -37,14 +37,15 @@ src/
 ├── styles/
 └── utils/
     └── date/
-        ├── date.ts               # Main utility file (required)
-        ├── date.utils.ts         # Additional helpers (optional, only if date.ts exists)
-        └── date.test.ts
+        ├── date.ts               # All utility functions go here
+        ├── date.types.ts         # Types (optional)
+        ├── date.constants.ts     # Constants (optional)
+        └── date.test.ts          # Tests for date.ts
 ```
 
 ## Component File Organization
 
-Components contain **only** JSX, Props type, and hooks. Extract everything else:
+A `.tsx` file contains **only** the component function, its `Props` type, and hook calls. Extract everything else — this includes all constants (arrays, objects, primitive values), all types beyond Props, and all helper functions:
 
 ```text
 userCard/
@@ -79,35 +80,11 @@ Key rules:
 
 ## One Component Per File
 
-Each `.tsx` file exports **exactly one component**. This keeps files focused and makes imports predictable.
-
-### Exported Components
-
-Every exported component gets its own file:
+Each `.tsx` file contains **exactly one React component** — no exceptions. Every component, no matter how small, gets its own subfolder and file.
 
 ```typescript
-// ❌ Wrong — multiple exported components in one file
+// ❌ Wrong — two components in one file (even if the helper is not exported)
 // UserCard.tsx
-export function UserCard() { ... }
-export function UserAvatar() { ... }  // Should be in its own file
-
-// ✅ Right — one exported component per file
-// UserCard.tsx
-export function UserCard() { ... }
-
-// userAvatar/UserAvatar.tsx
-export function UserAvatar() { ... }
-```
-
-### Private Helper Components
-
-Small, **non-exported** helper components may live in the same file when they:
-1. Are only used by the main component
-2. Are tightly coupled and would not make sense standalone
-3. Are simple (< 20 lines)
-
-```typescript
-// UserCard.tsx — acceptable: private helper component
 function CardBadge({status}: {status: string}) {
   return <span className={status}>{status}</span>;
 }
@@ -120,20 +97,30 @@ export function UserCard({user}: Props) {
     </div>
   );
 }
+
+// ✅ Right — every component in its own subfolder
+// UserCard.tsx
+import {CardBadge} from './cardBadge/CardBadge';
+
+export function UserCard({user}: Props) {
+  return (
+    <div>
+      <CardBadge status={user.status} />
+      {user.name}
+    </div>
+  );
+}
+
+// cardBadge/CardBadge.tsx
+export function CardBadge({status}: Props) {
+  return <span className={status}>{status}</span>;
+}
 ```
-
-### When to Extract
-
-Extract a helper component to its own file when:
-- It grows beyond ~20 lines
-- It needs its own props type definition
-- It could be reused elsewhere
-- It has its own state or effects
 
 ```text
 userCard/
 ├── UserCard.tsx
-├── cardBadge/          # Extracted when it grew complex
+├── cardBadge/
 │   └── CardBadge.tsx
 └── cardActions/
     └── CardActions.tsx
