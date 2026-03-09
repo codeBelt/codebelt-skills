@@ -5,6 +5,9 @@
 - [Directory Structure](#directory-structure)
 - [Component File Organization](#component-file-organization)
 - [Component File Example](#component-file-example)
+- [Event Handlers](#event-handlers)
+- [Computed Values](#computed-values)
+- [One Component Per File](#one-component-per-file)
 - [Supporting Files](#supporting-files)
 - [Component Hierarchy](#component-hierarchy)
 - [Barrel Files Policy](#barrel-files-policy)
@@ -115,6 +118,31 @@ const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
 
 // ✅ Right — inline it
 <Button onClick={() => onDelete(userId)} />
+```
+
+## Computed Values
+
+Wrap derived values in `useMemo` when the computation returns a **new reference** (array, object) or is expensive. Without `useMemo`, a new reference is created every render, causing unnecessary re-renders of child components that receive it as a prop.
+
+```typescript
+// ❌ Wrong — creates a new array every render, children always re-render
+const sortedItems = sortItems(items, sortState);
+const filteredUsers = users.filter((user) => user.isActive);
+const chartData = buildChartData(rawData);
+
+// ✅ Right — stable reference, children only re-render when inputs change
+const sortedItems = useMemo(() => sortItems(items, sortState), [items, sortState]);
+const filteredUsers = useMemo(() => users.filter((user) => user.isActive), [users]);
+const chartData = useMemo(() => buildChartData(rawData), [rawData]);
+```
+
+Primitive values (strings, numbers, booleans) do not need `useMemo` — they are compared by value, not reference.
+
+```typescript
+// No useMemo needed — primitives
+const totalCount = items.length;
+const isDisabled = items.length === 0;
+const label = `${firstName} ${lastName}`;
 ```
 
 ## One Component Per File
