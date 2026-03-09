@@ -5,6 +5,9 @@
 - [Directory Structure](#directory-structure)
 - [Component File Organization](#component-file-organization)
 - [Component File Example](#component-file-example)
+- [Event Handlers](#event-handlers)
+- [Computed Values](#computed-values)
+- [One Component Per File](#one-component-per-file)
 - [Supporting Files](#supporting-files)
 - [Component Hierarchy](#component-hierarchy)
 - [Barrel Files Policy](#barrel-files-policy)
@@ -37,14 +40,15 @@ src/
 ├── styles/
 └── utils/
     └── date/
-        ├── date.ts               # Main utility file (required)
-        ├── date.utils.ts         # Additional helpers (optional, only if date.ts exists)
-        └── date.test.ts
+        ├── date.ts               # All utility functions go here
+        ├── date.types.ts         # Types (optional)
+        ├── date.constants.ts     # Constants (optional)
+        └── date.test.ts          # Tests for date.ts
 ```
 
 ## Component File Organization
 
-Components contain **only** JSX, Props type, and hooks. Extract everything else:
+A `.tsx` file contains **only** the component function, its `Props` type, and hook calls. Extract everything else — this includes all constants (arrays, objects, primitive values), all types beyond Props, and all helper functions:
 
 ```text
 userCard/
@@ -63,7 +67,7 @@ import type {User} from './UserCard.types';
 
 type Props = {  // Never export Props
   user: User;
-  onSelect: (id: string) => void;
+  onSelect: (userId: string) => void;
 };
 
 export function UserCard({user, onSelect}: Props) {
@@ -73,9 +77,125 @@ export function UserCard({user, onSelect}: Props) {
 
 Key rules:
 - `type Props` is **never exported** — it's internal to the component
+- Always named `Props` (never `UserCardProps`, `IProps`, etc.)
 - Use `type` not `interface` for Props
-- One component per file
+- Always destructure props in the function signature (never in the body)
+- Use `function` keyword for components (not arrow functions)
+- **One component per `.tsx` file** — each file has exactly one component
 - Named export only
+- Callback props use `on` prefix (`onSelect`, `onSubmit`), internal handlers use `handle` prefix (`handleSubmit`, `handleClick`)
+
+## Event Handlers
+
+**Inline** event handlers when they simply forward to a prop or call a function with straightforward arguments. **Extract** to a named function only when there is real logic (state updates, conditionals, transformations, multiple steps).
+
+```typescript
+// ✅ Inline — just forwarding a call, no logic
+<Button label="Delete" onClick={() => onDelete(userId)} />
+<input onChange={(event) => onSearchChange(event.target.value)} />
+<li onClick={() => onSelect(item.id)} />
+
+// ✅ Extracted — has actual logic
+const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
+  const errors = validate(formData);
+  if (Object.keys(errors).length === 0) {
+    onSubmit(formData);
+  }
+};
+
+const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const updatedCategories = selectedCategories.includes(event.target.value)
+    ? selectedCategories.filter((category) => category !== event.target.value)
+    : [...selectedCategories, event.target.value];
+
+  onFilterChange(updatedCategories);
+};
+```
+
+```typescript
+// ❌ Wrong — unnecessary wrapper around a simple call
+const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  onDelete(userId);
+};
+<Button onClick={handleDeleteClick} />
+
+// ✅ Right — inline it
+<Button onClick={() => onDelete(userId)} />
+```
+
+## Computed Values
+
+Wrap derived values in `useMemo` when the computation returns a **new reference** (array, object) or is expensive. Without `useMemo`, a new reference is created every render, causing unnecessary re-renders of child components that receive it as a prop.
+
+```typescript
+// ❌ Wrong — creates a new array every render, children always re-render
+const sortedItems = sortItems(items, sortState);
+const filteredUsers = users.filter((user) => user.isActive);
+const chartData = buildChartData(rawData);
+
+// ✅ Right — stable reference, children only re-render when inputs change
+const sortedItems = useMemo(() => sortItems(items, sortState), [items, sortState]);
+const filteredUsers = useMemo(() => users.filter((user) => user.isActive), [users]);
+const chartData = useMemo(() => buildChartData(rawData), [rawData]);
+```
+
+Primitive values (strings, numbers, booleans) do not need `useMemo` — they are compared by value, not reference.
+
+```typescript
+// No useMemo needed — primitives
+const totalCount = items.length;
+const isDisabled = items.length === 0;
+const label = `${firstName} ${lastName}`;
+```
+
+## One Component Per File
+
+Each `.tsx` file contains **exactly one React component** — no exceptions. Every component, no matter how small, gets its own subfolder and file.
+
+```typescript
+// ❌ Wrong — two components in one file (even if the helper is not exported)
+// UserCard.tsx
+function CardBadge({status}: {status: string}) {
+  return <span className={status}>{status}</span>;
+}
+
+export function UserCard({user}: Props) {
+  return (
+    <div>
+      <CardBadge status={user.status} />
+      {user.name}
+    </div>
+  );
+}
+
+// ✅ Right — every component in its own subfolder
+// UserCard.tsx
+import {CardBadge} from './cardBadge/CardBadge';
+
+export function UserCard({user}: Props) {
+  return (
+    <div>
+      <CardBadge status={user.status} />
+      {user.name}
+    </div>
+  );
+}
+
+// cardBadge/CardBadge.tsx
+export function CardBadge({status}: Props) {
+  return <span className={status}>{status}</span>;
+}
+```
+
+```text
+userCard/
+├── UserCard.tsx
+├── cardBadge/
+│   └── CardBadge.tsx
+└── cardActions/
+    └── CardActions.tsx
+```
 
 ## Supporting Files
 

@@ -24,10 +24,10 @@ Opinionated TypeScript and React code style for consistency, maintainability, an
 | Extension | Purpose |
 |-----------|---------|
 | `.ts{x}` | Main code (`.tsx` only when file contains JSX) |
-| `.test.ts` | Tests |
+| `.test.ts` | Tests (placed next to the file being tested) |
 | `.types.ts` | TypeScript types |
-| `.utils.ts{x}` | Helper functions |
-| `.utils.test.ts` | Tests for utility functions |
+| `.utils.ts{x}` | Helper functions (components only — not in `utils/` folders) |
+| `.utils.test.ts` | Tests for component helper functions |
 | `.schemas.ts` | Zod validation schemas |
 | `.schemas.test.ts` | Tests for schemas |
 | `.constants.ts{x}` | Static objects and constants |
@@ -41,6 +41,9 @@ Opinionated TypeScript and React code style for consistency, maintainability, an
 | Everything else | camelCase | `httpClient.ts` |
 | Variables/params | Descriptive (no single chars) | `event` not `e` |
 | Constants | camelCase | `maxRetries` not `MAX_RETRIES` |
+| State updater args | `previous` prefix | `previousData`, `previousState` |
+| Internal handlers | `handle` prefix | `handleSubmit`, `handleFilterChange` |
+| Callback props | `on` prefix | `onSubmit`, `onFilterChange` |
 
 ### Exports
 
@@ -51,6 +54,10 @@ export function Component() {}
 ```
 
 No default exports. No barrel files in application code.
+
+### Component Files
+
+**One component per `.tsx` file — no exceptions.** Every component, no matter how small, gets its own subfolder and file.
 
 ---
 
@@ -82,9 +89,11 @@ No default exports. No barrel files in application code.
 ### Creating a New Utility
 
 1. Create folder: `utils/{utilName}/`
-2. Create main utility file: `{utilName}.ts`
-3. Optionally create helper file: `{utilName}.utils.ts` (for additional helpers, only if main file exists)
-4. Create test files: `{utilName}.test.ts` and/or `{utilName}.utils.test.ts`
+2. Create main utility file: `{utilName}.ts` — all helper functions go here (no `.utils.ts` file)
+3. Create constants file: `{utilName}.constants.ts` (if any)
+4. Create test file: `{utilName}.test.ts`
+
+> **Note:** Unlike components, utility folders do **not** use `.utils.ts` files. The main `{utilName}.ts` file itself is the utility — adding a `.utils.ts` beside it would be redundant.
 
 ---
 

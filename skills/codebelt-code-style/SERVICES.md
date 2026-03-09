@@ -27,30 +27,33 @@ services/
 ```typescript
 // services/hyperion/users/usersService.ts
 import {useQuery} from '@tanstack/react-query';
-import {http} from '@/utils/httpClient/httpClient';
-import {api} from '@/utils/httpClient/httpClient.constants';
+import {httpClient} from '@/utils/httpClient/httpClient';
+import {apiBasePath} from '@/utils/httpClient/httpClient.constants';
 import {getUsersKey} from './usersService.constants';
-import {GetUsersResponseSchema} from './usersService.schemas';
+import type {GetUsersResponseSchema} from './usersService.schemas';
 
-/* POST /api/v1/users */
-export async function getUsers() {
-  return http.get<GetUsersResponseSchema>(api.hyperion.users.v1.list, {
-    responseSchema: GetUsersResponseSchema,
+/* GET /api/v1/users */
+export async function getUsers(page: number, pageSize: number): Promise<GetUsersResponseSchema> {
+  const response = await httpClient.get(`${apiBasePath}/users`, {
+    params: {page, pageSize},
   });
+
+  return response.data;
 }
 
-export function useGetUsers() {
+export function useGetUsers(page: number, pageSize: number) {
   return useQuery({
-    queryKey: [getUsersKey],
-    queryFn: getUsers,
+    queryKey: [getUsersKey, page, pageSize],
+    queryFn: () => getUsers(page, pageSize),
   });
 }
 ```
 
 Key rules:
-- Comment with HTTP method and path: `/* POST /api/v1/users */`
-- Use schema for response validation
+- Comment with HTTP method and path: `/* GET /api/v1/users */`
+- Explicit return type on fetch functions: `Promise<GetUsersResponseSchema>`
 - Query hooks live alongside their fetch functions
+- Fetch functions are `async function`, not arrow functions
 
 ## Schema File
 
