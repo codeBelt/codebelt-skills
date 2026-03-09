@@ -52,6 +52,10 @@ export function Component() {}
 
 No default exports. No barrel files in application code.
 
+### Component Files
+
+**One exported component per `.tsx` file.** Small private helper components (< 20 lines, non-exported) may be co-located.
+
 ---
 
 ## Workflows

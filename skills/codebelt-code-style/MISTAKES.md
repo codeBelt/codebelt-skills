@@ -13,7 +13,7 @@ Quick-reference table for code review and self-checks.
 | `(e) => handleClick(e)` | `(event) => handleClick(event)` |
 | Constants in component | Extract to `.constants.ts` |
 | Helpers in component | Extract to `.utils.ts` |
-| Multiple components per file | One component per file |
+| Multiple exported components per file | One exported component per `.tsx` file (private helpers OK) |
 | Barrel files (`index.ts`) | Direct imports from modules |
 | Default exports | Named exports |
 | Re-exporting types/values | Import directly from source file |
