@@ -78,6 +78,45 @@ Key rules:
 - **One exported component per `.tsx` file** — each file exports exactly one component
 - Named export only
 
+## Event Handlers
+
+**Inline** event handlers when they simply forward to a prop or call a function with straightforward arguments. **Extract** to a named function only when there is real logic (state updates, conditionals, transformations, multiple steps).
+
+```typescript
+// ✅ Inline — just forwarding a call, no logic
+<Button label="Delete" onClick={() => onDelete(userId)} />
+<input onChange={(event) => onSearchChange(event.target.value)} />
+<li onClick={() => onSelect(item.id)} />
+
+// ✅ Extracted — has actual logic
+const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
+  const errors = validate(formData);
+  if (Object.keys(errors).length === 0) {
+    onSubmit(formData);
+  }
+};
+
+const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const updatedCategories = selectedCategories.includes(event.target.value)
+    ? selectedCategories.filter((category) => category !== event.target.value)
+    : [...selectedCategories, event.target.value];
+
+  onFilterChange(updatedCategories);
+};
+```
+
+```typescript
+// ❌ Wrong — unnecessary wrapper around a simple call
+const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  onDelete(userId);
+};
+<Button onClick={handleDeleteClick} />
+
+// ✅ Right — inline it
+<Button onClick={() => onDelete(userId)} />
+```
+
 ## One Component Per File
 
 Each `.tsx` file contains **exactly one React component** — no exceptions. Every component, no matter how small, gets its own subfolder and file.

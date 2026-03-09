@@ -11,6 +11,7 @@ Quick-reference table for code review and self-checks.
 | `utils/date/date.utils.ts` | `utils/date/date.ts` — the main file *is* the utility, no `.utils.ts` needed |
 | `const MAX_RETRIES = 3` | `const maxRetries = 3` |
 | `(e) => handleClick(e)` | `(event) => handleClick(event)` |
+| Wrapping a simple call in a named handler | Inline it: `onClick={() => onDelete(userId)}` |
 | Constants in component (arrays, objects, primitives) | Extract to `.constants.ts` |
 | Helpers in component | Extract to `.utils.ts` |
 | Multiple components in one `.tsx` file | One component per `.tsx` file — extract all helpers to subfolders |
