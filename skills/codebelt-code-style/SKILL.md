@@ -24,10 +24,10 @@ Opinionated TypeScript and React code style for consistency, maintainability, an
 | Extension | Purpose |
 |-----------|---------|
 | `.ts{x}` | Main code (`.tsx` only when file contains JSX) |
-| `.test.ts` | Tests |
+| `.test.ts` | Tests (placed next to the file being tested) |
 | `.types.ts` | TypeScript types |
-| `.utils.ts{x}` | Helper functions |
-| `.utils.test.ts` | Tests for utility functions |
+| `.utils.ts{x}` | Helper functions (components only — not in `utils/` folders) |
+| `.utils.test.ts` | Tests for component helper functions |
 | `.schemas.ts` | Zod validation schemas |
 | `.schemas.test.ts` | Tests for schemas |
 | `.constants.ts{x}` | Static objects and constants |
@@ -41,6 +41,9 @@ Opinionated TypeScript and React code style for consistency, maintainability, an
 | Everything else | camelCase | `httpClient.ts` |
 | Variables/params | Descriptive (no single chars) | `event` not `e` |
 | Constants | camelCase | `maxRetries` not `MAX_RETRIES` |
+| State updater args | `previous` prefix | `previousData`, `previousState` |
+| Internal handlers | `handle` prefix | `handleSubmit`, `handleFilterChange` |
+| Callback props | `on` prefix | `onSubmit`, `onFilterChange` |
 
 ### Exports
 

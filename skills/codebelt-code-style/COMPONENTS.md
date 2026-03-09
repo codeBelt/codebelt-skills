@@ -67,7 +67,7 @@ import type {User} from './UserCard.types';
 
 type Props = {  // Never export Props
   user: User;
-  onSelect: (id: string) => void;
+  onSelect: (userId: string) => void;
 };
 
 export function UserCard({user, onSelect}: Props) {
@@ -77,9 +77,13 @@ export function UserCard({user, onSelect}: Props) {
 
 Key rules:
 - `type Props` is **never exported** — it's internal to the component
+- Always named `Props` (never `UserCardProps`, `IProps`, etc.)
 - Use `type` not `interface` for Props
-- **One exported component per `.tsx` file** — each file exports exactly one component
+- Always destructure props in the function signature (never in the body)
+- Use `function` keyword for components (not arrow functions)
+- **One component per `.tsx` file** — each file has exactly one component
 - Named export only
+- Callback props use `on` prefix (`onSelect`, `onSubmit`), internal handlers use `handle` prefix (`handleSubmit`, `handleClick`)
 
 ## Event Handlers
 
