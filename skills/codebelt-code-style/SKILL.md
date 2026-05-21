@@ -13,11 +13,18 @@ Opinionated TypeScript and React code style for consistency, maintainability, an
 
 | Code Type | Location |
 |-----------|----------|
-| React component | `components/pages/`, `components/shared/`, or `components/ui/` |
-| API logic | `services/{provider}/{service}/` |
+| Page component | `components/pages/{pageName}/` |
+| Reusable domain component | `components/shared/{componentName}/` |
+| Pure presentational primitive | `components/ui/{componentName}/` |
+| API logic | `services/{provider}/{service}/` or `services/{service}/` |
 | Reusable function | `utils/{utilName}/` |
 | React hook | `hooks/use{HookName}/` |
+| Global state store | `stores/{storeName}/` |
+| Global stylesheet | `styles/` |
+| Next.js route files | `app/` |
 | Third-party config | `libs/{libraryName}/` |
+
+See [COMPONENTS.md](COMPONENTS.md#component-tiers) for the decision tree between `ui/`, `shared/`, and `pages/`.
 
 ### File Extensions
 
@@ -30,7 +37,10 @@ Opinionated TypeScript and React code style for consistency, maintainability, an
 | `.utils.test.ts` | Tests for component helper functions |
 | `.schemas.ts` | Zod validation schemas |
 | `.schemas.test.ts` | Tests for schemas |
+| `.dynamic.tsx` | Next.js dynamic import wrapper (`ssr: false`) |
 | `.constants.ts{x}` | Static objects and constants |
+| `.store.ts` | State store (see [STORES.md](STORES.md)) |
+| `.module.css` | Co-located CSS Module (see [STYLING.md](STYLING.md)) |
 
 ### Naming Conventions
 
@@ -55,6 +65,19 @@ export function Component() {}
 
 No default exports. No barrel files in application code.
 
+**Exception — Next.js special files:** the Next.js app router requires `export default` for these route-segment files, and only these:
+
+- `app/**/layout.tsx`
+- `app/**/page.tsx`
+- `app/**/loading.tsx`
+- `app/**/error.tsx`
+- `app/**/not-found.tsx`
+- `app/**/template.tsx`
+- `app/**/default.tsx`
+- `app/**/route.ts`
+
+Everywhere else (components, services, hooks, utils, stores), named exports only.
+
 ### Component Files
 
 **One component per `.tsx` file — no exceptions.** Every component, no matter how small, gets its own subfolder and file.
@@ -63,19 +86,41 @@ No default exports. No barrel files in application code.
 
 ## Workflows
 
+### Choosing a Component Tier
+
+Before creating a component, decide where it lives:
+
+1. **Is it domain-agnostic** (Button, Heading, Input, Modal)? → `components/ui/{componentName}/`
+2. **Is it route-specific** (only used by one page)? → nest it inside the page folder: `components/pages/{pageName}/{componentName}/`
+3. **Was a page-local component just imported by a second page?** → promote it to `components/shared/{componentName}/`
+
+Default is **page-local first**. Promote to `shared/` only when a second consumer appears — premature promotion creates components that try to serve everyone and fit no one.
+
+See [COMPONENTS.md](COMPONENTS.md#component-tiers) for the full hierarchy.
+
 ### Creating a New Component
 
-1. Create folder: `components/{pages|shared|ui}/{componentName}/`
+1. Pick the tier (see above) and create folder: `components/{ui|shared|pages/{pageName}}/{componentName}/`
 2. Create component file: `{ComponentName}.tsx` with Props type and JSX only
 3. Extract types to `{ComponentName}.types.ts` (if needed beyond Props)
 4. Extract constants to `{ComponentName}.constants.ts` (if any)
 5. Extract helpers to `{ComponentName}.utils.ts` (if any)
-6. Verify: one component per file, Props not exported, named export
+6. Create `{ComponentName}.dynamic.tsx` if the component is client-only and needs lazy loading (see [COMPONENTS.md](COMPONENTS.md#dynamic-imports))
+7. Verify: one component per file, Props not exported, named export
+
+### Creating a New Page
+
+1. Create folder: `components/pages/{pageName}/`
+2. Create `{PageName}.tsx` (the page component itself)
+3. If multiple nested children share types, create `{PageName}.types.ts` and import down — never re-export types from a child `.types.ts`
+4. If the page needs mappers or helpers shared across children, create `{PageName}.utils.ts`
+5. Nest child components in subfolders: `components/pages/{pageName}/{childName}/{Child}.tsx`
+6. If using Next.js app router, the route file in `app/` imports and renders the page component (see [Exports](#exports) exception above)
 
 ### Creating a New Service
 
-1. Create folder: `services/{provider}/{serviceName}/`
-2. Create main file: `{serviceName}Service.ts` with fetch functions and query hooks
+1. Create folder. Use `services/{provider}/{serviceName}/` when the app talks to multiple backends; use `services/{serviceName}/` when there is only one. See [SERVICES.md](SERVICES.md#service-folder-layouts).
+2. Create main file: `{serviceName}Service.ts` with fetch functions and query hooks. Add `'use client'` at the top when the file exports React Query hooks (see [SERVICES.md](SERVICES.md#use-client-on-services)).
 3. Create schema file: `{serviceName}Service.schemas.ts` with Zod schemas
 4. Create constants file: `{serviceName}Service.constants.ts` with query keys
 5. Verify: schema and type share same name, comment with HTTP method and path
@@ -99,7 +144,9 @@ No default exports. No barrel files in application code.
 
 ## Detailed References
 
-- **Component patterns and hierarchy**: See [COMPONENTS.md](COMPONENTS.md)
+- **Component patterns, tiers, and hierarchy**: See [COMPONENTS.md](COMPONENTS.md)
 - **Service and schema patterns**: See [SERVICES.md](SERVICES.md)
+- **State stores**: See [STORES.md](STORES.md)
+- **Styling (Tailwind + CSS Modules)**: See [STYLING.md](STYLING.md)
 - **Testing patterns**: See [TESTING.md](TESTING.md)
 - **Common mistakes to avoid**: See [MISTAKES.md](MISTAKES.md)

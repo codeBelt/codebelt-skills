@@ -20,8 +20,18 @@ Quick-reference table for code review and self-checks.
 | Helpers in component | Extract to `.utils.ts` |
 | Multiple components in one `.tsx` file | One component per `.tsx` file — extract all helpers to subfolders |
 | Barrel files (`index.ts`) | Direct imports from modules |
-| `export default function` | `export function` — named exports only |
+| `export default function` (outside `app/` special files) | `export function` — named exports only. Next.js `layout.tsx`, `page.tsx`, `route.ts`, etc. are the only exceptions (see [SKILL.md](SKILL.md#exports)) |
+| `dynamic(() => import('./Foo'))` | `dynamic(() => import('./Foo').then((mod) => mod.Foo))` — named exports need `.then()` |
+| Importing original component when `.dynamic.tsx` exists | Import `FooDynamic` from `.dynamic.tsx` for client-only components |
 | Re-exporting types/values | Import directly from source file |
+| `export type {UserDisplay} from '../UsersPage.types'` in a child `.types.ts` | Import `UserDisplay` directly from `../UsersPage.types`. Sibling `.types.ts` files must never re-export each other's types — it creates two import paths for one type |
+| Page-shared type defined inside `{NestedChild}.types.ts` | Put it in `{Page}.types.ts` and import down (see [COMPONENTS.md](COMPONENTS.md#page-level-supporting-files)) |
+| Domain-agnostic primitive (Button, Heading) under `components/shared/` | Move it to `components/ui/` — `shared/` is for domain-aware reusable components only (see [COMPONENTS.md](COMPONENTS.md#component-tiers)) |
 | `interface User {...}` | `type User = {...}` |
 | Different schema/type names | Same name for both (dual namespaces) |
 | Handler prop named `handleClick` | Props use `on` prefix: `onClick`; internals use `handle`: `handleClick` |
+| `items: any[]` / `onSelect: (item: unknown) => void` on a reusable component | Make the component generic: `function List<TItem>(...)` so the callback is typed end-to-end (see [COMPONENTS.md](COMPONENTS.md#generic-components)) |
+
+## Why camelCase for constants
+
+`const maxRetries = 3` — not `MAX_RETRIES`. SCREAMING_CASE in JavaScript carries an implicit promise of "compile-time enumeration / never changes" that the language doesn't actually enforce. Using camelCase for module constants keeps visual parity with the rest of the codebase and stops the false signal. The rule applies equally to query keys (`getUsersKey`), API paths (`apiBasePath`), and feature flags.

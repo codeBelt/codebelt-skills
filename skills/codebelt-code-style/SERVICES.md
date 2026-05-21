@@ -2,25 +2,49 @@
 
 ## Table of Contents
 
-- [Service Structure](#service-structure)
+- [Service Folder Layouts](#service-folder-layouts)
 - [Main Service File](#main-service-file)
+- [`'use client'` on Services](#use-client-on-services)
+- [HTTP Client Choice](#http-client-choice)
+- [Response Shape Variations](#response-shape-variations)
 - [Schema File](#schema-file)
 - [Constants File](#constants-file)
 - [TypeScript Rules](#typescript-rules)
 - [Schema Naming Pattern](#schema-naming-pattern)
 
-## Service Structure
+## Service Folder Layouts
 
-Services have three files organized by provider and resource. Files use a `Service` suffix:
+Two layouts are both valid; pick based on how many backends the app talks to.
+
+### Flat (single backend)
 
 ```text
 services/
-└── hyperion/           # Provider/API name
-    └── users/          # Resource name
-        ├── usersService.ts              # Main functions + query hooks
-        ├── usersService.schemas.ts      # Zod validation schemas
-        └── usersService.constants.ts    # Query keys and static values
+└── users/
+    ├── usersService.ts
+    ├── usersService.schemas.ts
+    └── usersService.constants.ts
 ```
+
+Use this when every service in the app hits the same API. No need for a grouping folder — it just adds depth.
+
+### Provider-based (multiple backends)
+
+```text
+services/
+├── hyperion/                # First backend
+│   └── users/
+│       ├── usersService.ts
+│       ├── usersService.schemas.ts
+│       └── usersService.constants.ts
+└── stripe/                  # Second backend
+    └── charges/
+        └── chargesService.ts
+```
+
+Introduce the provider folder the moment a second backend appears. Each provider folder groups services that share a base URL, auth scheme, or HTTP client.
+
+Files always use a `Service` suffix regardless of layout.
 
 ## Main Service File
 
@@ -54,6 +78,98 @@ Key rules:
 - Explicit return type on fetch functions: `Promise<GetUsersResponseSchema>`
 - Query hooks live alongside their fetch functions
 - Fetch functions are `async function`, not arrow functions
+
+## `'use client'` on Services
+
+A service file that exports React Query hooks (`useGetUsers`, `useCreateOrder`, etc.) is a Client Component module — the hooks can only be called from client trees. In a Next.js app router project, put `'use client'` at the top so the bundler treats the whole module as client-side and the hooks behave correctly when consumed.
+
+```typescript
+'use client';
+
+import {useQuery} from '@tanstack/react-query';
+import ky from 'ky';
+
+export async function getUsers(): Promise<GetUsersResponseSchema> {
+  return ky.get('/api/v1/users').json();
+}
+
+export function useGetUsers() {
+  return useQuery({queryKey: [getUsersKey], queryFn: getUsers});
+}
+```
+
+The trade-off: a service marked `'use client'` cannot be called from server components, route handlers, or server actions. If you need the raw fetch function on both sides of the RSC boundary, split the file:
+
+```text
+services/users/
+├── usersService.ts        # No 'use client'. Pure async functions — callable from anywhere.
+├── usersService.hooks.ts  # 'use client'. Re-imports the fetch fns and wraps them in React Query hooks.
+├── usersService.schemas.ts
+└── usersService.constants.ts
+```
+
+Pick one pattern per project and stick with it. **Co-located fetch + hooks with `'use client'`** is the default — use the split pattern only when a service genuinely needs server-side callers.
+
+If a service exports only fetch functions (no React hooks), omit the directive — there's nothing client-only to mark.
+
+## HTTP Client Choice
+
+Two patterns are both fine — pick one per project and stick with it.
+
+### Custom wrapper
+
+```typescript
+import {httpClient} from '@/utils/httpClient/httpClient';
+import {apiBasePath} from '@/utils/httpClient/httpClient.constants';
+
+export async function getUsers(): Promise<GetUsersResponseSchema> {
+  const response = await httpClient.get(`${apiBasePath}/users`);
+  return response.data;
+}
+```
+
+Use a wrapper when the project needs centralized auth headers, retry policy, error mapping, or telemetry across every service.
+
+### Direct library (ky, fetch, axios)
+
+```typescript
+import ky from 'ky';
+
+export async function getUsers(): Promise<GetUsersResponseSchema> {
+  return ky.get('/api/v1/users').json();
+}
+```
+
+Use a direct library when requests are simple and a wrapper would be ceremony for its own sake.
+
+Consistency within a project matters more than which option you pick. Don't mix both.
+
+## Response Shape Variations
+
+Both paginated and flat-array responses are valid; the Zod schema must mirror what the API actually returns.
+
+```typescript
+// Paginated
+export const GetUsersResponseSchema = z.object({
+  users: z.array(UserSchema),
+  totalCount: z.number(),
+  page: z.number(),
+  pageSize: z.number(),
+});
+
+export async function getUsers(page: number, pageSize: number): Promise<GetUsersResponseSchema> {
+  /* ... */
+}
+
+// Flat array
+export const GetUsersResponseSchema = z.array(UserSchema);
+
+export async function getUsers(): Promise<GetUsersResponseSchema> {
+  /* ... */
+}
+```
+
+Do not wrap an array response in an object just to match a paginated shape — the schema lies and consumers pay the cost.
 
 ## Schema File
 
