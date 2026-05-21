@@ -2,16 +2,29 @@
 
 ## Table of Contents
 
+- [Test Runner](#test-runner)
 - [Test Structure](#test-structure)
 - [test.each with Object Arrays](#testeach-with-object-arrays)
 - [Test File Placement](#test-file-placement)
+
+## Test Runner
+
+The patterns below are **runner-agnostic**. Use whichever runner the project has already configured — typically `bun:test`, `vitest`, or `jest`. All three expose the same surface (`describe`, `test`, `expect`, `test.each`, lifecycle hooks), so only the import source changes:
+
+```typescript
+import {describe, expect, test} from 'bun:test';  // Bun
+import {describe, expect, test} from 'vitest';    // Vitest
+// Jest exposes describe/expect/test as globals — no import needed
+```
+
+Do not introduce a second runner into a project that already has one. Match the existing setup.
 
 ## Test Structure
 
 Use `describe` blocks with `test.each` and arrays of objects for parameterized tests. One `describe` block per function being tested. Shared mock data lives outside `describe` blocks at the top of the file.
 
 ```typescript
-import {describe, expect, test} from 'bun:test';
+import {describe, expect, test} from 'bun:test'; // or 'vitest' — match the project
 import {filterUsers, formatUserStatus} from './UsersList.utils';
 import type {UserRow} from './UsersList.types';
 
@@ -54,7 +67,7 @@ Key rules:
 - Use `test.each` with an **array of objects** (not arrays of arrays)
 - Each object has a `description` field for the test name
 - Reference properties in the test name with `$description` syntax
-- Use `bun:test` as the test runner
+- Match the project's existing test runner — do not mix `bun:test`, `vitest`, and `jest`
 - One `describe` block per exported function
 - Shared mock data at the top of the file, outside `describe` blocks
 - Type mock data using `import type` from the source types
@@ -68,3 +81,4 @@ Key rules:
 | `usersService.schemas.ts` | `usersService.schemas.test.ts` |
 | `hooks/useDebounce/useDebounce.ts` | `hooks/useDebounce/useDebounce.test.ts` |
 | `utils/date/date.ts` | `utils/date/date.test.ts` |
+| `utils/formatName/formatName.ts` | `utils/formatName/formatName.test.ts` |

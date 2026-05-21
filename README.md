@@ -6,7 +6,7 @@ A collection of [Agent Skills](https://platform.claude.com/docs/en/agents-and-to
 
 | Skill | Description |
 |-------|-------------|
-| `codebelt-code-style` | TypeScript & React code style guide — project structure, naming conventions, component patterns, service patterns, testing, and Zod schema rules |
+| `codebelt-code-style` | TypeScript & React code style guide — project structure, naming conventions, component patterns, service patterns, state stores, styling (Tailwind + CSS Modules), testing, and Zod schema rules |
 
 ## Installation
 
