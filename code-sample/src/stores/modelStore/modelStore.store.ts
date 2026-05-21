@@ -1,7 +1,7 @@
 'use client';
 
-import {createClassyStore, type Snapshot} from '@codebelt/classy-store';
-import {useStore} from '@codebelt/classy-store/react';
+import {createClassyStore} from '@codebelt/classy-store';
+import {createStoreHook} from '@codebelt/classy-store/react';
 import {defaultModelId} from './modelStore.constants';
 import type {Model} from './modelStore.types';
 
@@ -23,7 +23,4 @@ class ModelStore {
 }
 
 export const modelStore = createClassyStore(new ModelStore());
-
-export function useModelStore<TSelected>(selector: (store: Snapshot<ModelStore>) => TSelected): TSelected {
-  return useStore(modelStore, selector);
-}
+export const useModelStore = createStoreHook(modelStore);
