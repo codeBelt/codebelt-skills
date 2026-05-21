@@ -1,5 +1,3 @@
-'use client';
-
 import {useQuery} from '@tanstack/react-query';
 import ky from 'ky';
 import {baseUrl, getUserByIdKey, getUsersKey} from './usersService.constants';

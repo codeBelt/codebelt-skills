@@ -1,4 +1,4 @@
-import type {UserStatus} from '../UserCard.types';
+import type {UserStatus} from '../../UsersPage.types';
 
 type Props = {
   status: UserStatus;

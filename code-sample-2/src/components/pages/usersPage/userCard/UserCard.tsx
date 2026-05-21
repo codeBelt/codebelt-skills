@@ -1,5 +1,5 @@
 import {StatusBadge} from './statusBadge/StatusBadge';
-import type {UserDisplay} from './UserCard.types';
+import type {UserDisplay} from '../UsersPage.types';
 import {formatCity, truncateCompany} from './UserCard.utils';
 
 type Props = {

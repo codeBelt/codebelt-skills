@@ -21,10 +21,6 @@ export function UsersPage() {
 
   const {query, setQuery, filteredItems} = useSearch(displayUsers, searchFn);
 
-  const handleSelectUser = (userId: number) => {
-    console.log('Selected user:', userId);
-  };
-
   if (isLoading) {
     return <p className="py-8 text-center">Loading users...</p>;
   }
@@ -46,7 +42,7 @@ export function UsersPage() {
         />
       </div>
       <div className="mt-6">
-        <UserList users={filteredItems} onSelectUser={handleSelectUser} />
+        <UserList users={filteredItems} onSelectUser={(userId) => console.log('Selected user:', userId)} />
       </div>
     </main>
   );

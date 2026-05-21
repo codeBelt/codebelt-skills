@@ -1,4 +1,3 @@
-import {useMemo} from 'react';
 import {formatUserName} from './UserCard.utils';
 import {CardBadge} from './cardBadge/CardBadge';
 import type {User} from './UserCard.types';
@@ -9,7 +8,7 @@ type Props = {
 };
 
 export function UserCard({user, onSelect}: Props) {
-  const fullName = useMemo(() => formatUserName(user.name), [user.name]);
+  const fullName = formatUserName(user.name);
 
   return (
     <div onClick={() => onSelect(user.id)}>
