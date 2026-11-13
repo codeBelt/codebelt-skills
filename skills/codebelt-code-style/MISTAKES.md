@@ -1,6 +1,6 @@
 # Common Mistakes
 
-Quick-reference table for code review and self-checks.
+Quick-reference table for code reviews and self-checks. It applies to projects that use this guide. In a codebase with different established conventions, match those instead (see [SKILL.md](SKILL.md#first-does-this-project-use-codebelt-style)).
 
 | Wrong | Right |
 |-------|-------|
@@ -15,7 +15,7 @@ Quick-reference table for code review and self-checks.
 | `(e) => handleClick(e)` | `(event) => handleClick(event)` |
 | `setPrev`, `setOld` in state updaters | `(previousData) => ...` — always `previous` prefix |
 | Wrapping a simple call in a named handler | Inline it: `onClick={() => onDelete(userId)}` |
-| Derived array/object without `useMemo` | `useMemo(() => sort(items), [items])` — new references cause child re-renders |
+| Derived array/object without `useMemo` | `useMemo(() => sort(items), [items])`. A new reference on every render breaks memoized children and dependency arrays (skip this with the React Compiler) |
 | Constants in component (arrays, objects, primitives) | Extract to `.constants.ts` |
 | Helpers in component | Extract to `.utils.ts` |
 | Multiple components in one `.tsx` file | One component per `.tsx` file — extract all helpers to subfolders |
@@ -30,6 +30,13 @@ Quick-reference table for code review and self-checks.
 | `interface User {...}` | `type User = {...}` |
 | Different schema/type names | Same name for both (dual namespaces) |
 | Handler prop named `handleClick` | Props use `on` prefix: `onClick`; internals use `handle`: `handleClick` |
+| `return response.data` / `.json()` straight from a fetch function | `return GetUsersResponseSchema.parse(response.data)`, which validates at the API boundary (see [SERVICES.md](SERVICES.md#main-service-file)) |
+| `event.target.value as TValue` in a generic select | Look the option up by `String(option.value)`. The DOM returns strings, so the cast lies for numbers |
+| `<div onClick>` / `<li onClick>` for clickable UI | `<button type="button" onClick>`, which is reachable by keyboard and screen readers |
+| Zustand derived value stored as a function in state (`activeModel: () => ...`) | A selector in `.utils.ts`: `useModelStore(selectActiveModel)` (see [STORES.md](STORES.md#zustand)) |
+| MobX component reading the store without `observer` | Wrap it: `export const Foo = observer(function Foo() {...})`. Otherwise it never re-renders |
+| `` className={`a ${styles.b}`} `` | `className={clsx('a', styles.b)}` |
+| Rewriting a non-CodeBelt codebase's conventions without being asked | Match the existing conventions, mention the CodeBelt differences and offer to migrate |
 | `items: any[]` / `onSelect: (item: unknown) => void` on a reusable component | Make the component generic: `function List<TItem>(...)` so the callback is typed end-to-end (see [COMPONENTS.md](COMPONENTS.md#generic-components)) |
 
 ## Why camelCase for constants
