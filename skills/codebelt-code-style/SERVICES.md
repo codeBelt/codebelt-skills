@@ -54,7 +54,7 @@ import {useQuery} from '@tanstack/react-query';
 import {httpClient} from '@/utils/httpClient/httpClient';
 import {apiBasePath} from '@/utils/httpClient/httpClient.constants';
 import {getUsersKey} from './usersService.constants';
-import type {GetUsersResponseSchema} from './usersService.schemas';
+import {GetUsersResponseSchema} from './usersService.schemas';
 
 /* GET /api/v1/users */
 export async function getUsers(page: number, pageSize: number): Promise<GetUsersResponseSchema> {
@@ -62,7 +62,7 @@ export async function getUsers(page: number, pageSize: number): Promise<GetUsers
     params: {page, pageSize},
   });
 
-  return response.data;
+  return GetUsersResponseSchema.parse(response.data);
 }
 
 export function useGetUsers(page: number, pageSize: number) {
@@ -75,9 +75,12 @@ export function useGetUsers(page: number, pageSize: number) {
 
 Key rules:
 - Comment with HTTP method and path: `/* GET /api/v1/users */`
+- **Validate the response with `Schema.parse()`** before returning it. The schema exists to catch API drift at the boundary. If you return unvalidated data, the declared type promises a shape that nothing checks.
 - Explicit return type on fetch functions: `Promise<GetUsersResponseSchema>`
 - Query hooks live alongside their fetch functions
 - Fetch functions are `async function`, not arrow functions
+
+The example uses an axios-style wrapper, where the body is in `response.data`. Read the body the way your project's client does: `.json()` for ky, `await response.json()` for `fetch`. If the client is configured with a base URL or `prefixUrl`, don't repeat it in the path.
 
 ## `'use client'` on Services
 
@@ -90,7 +93,7 @@ import {useQuery} from '@tanstack/react-query';
 import ky from 'ky';
 
 export async function getUsers(): Promise<GetUsersResponseSchema> {
-  return ky.get('/api/v1/users').json();
+  return GetUsersResponseSchema.parse(await ky.get('/api/v1/users').json());
 }
 
 export function useGetUsers() {
@@ -124,7 +127,7 @@ import {apiBasePath} from '@/utils/httpClient/httpClient.constants';
 
 export async function getUsers(): Promise<GetUsersResponseSchema> {
   const response = await httpClient.get(`${apiBasePath}/users`);
-  return response.data;
+  return GetUsersResponseSchema.parse(response.data);
 }
 ```
 
@@ -136,7 +139,7 @@ Use a wrapper when the project needs centralized auth headers, retry policy, err
 import ky from 'ky';
 
 export async function getUsers(): Promise<GetUsersResponseSchema> {
-  return ky.get('/api/v1/users').json();
+  return GetUsersResponseSchema.parse(await ky.get('/api/v1/users').json());
 }
 ```
 
@@ -198,9 +201,7 @@ export const getUsersKey = 'getUsers';
 
 ## TypeScript Rules
 
-- Use `type` for **all** type definitions (object shapes, unions, advanced type operations)
-- Never use `interface` — always `type`
-- Schema types derive from Zod: `z.infer<typeof Schema>`
+The general rules (`type` rather than `interface`, no `any`) are in [SKILL.md](SKILL.md#typescript). For schemas, derive each type from its Zod schema with `z.infer<typeof Schema>` rather than writing the shape twice.
 
 ## Schema Naming Pattern
 

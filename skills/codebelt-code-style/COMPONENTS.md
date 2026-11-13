@@ -114,7 +114,11 @@ type Props = {  // Never export Props
 };
 
 export function UserCard({user, onSelect}: Props) {
-  return <div onClick={() => onSelect(user.id)}>{formatUserName(user.name)}</div>;
+  return (
+    <button type="button" onClick={() => onSelect(user.id)}>
+      {formatUserName(user.name)}
+    </button>
+  );
 }
 ```
 
@@ -136,7 +140,7 @@ Key rules:
 // ✅ Inline — just forwarding a call, no logic
 <Button label="Delete" onClick={() => onDelete(userId)} />
 <input onChange={(event) => onSearchChange(event.target.value)} />
-<li onClick={() => onSelect(item.id)} />
+<li key={item.id}><button type="button" onClick={() => onSelect(item.id)}>{item.label}</button></li>
 
 // ✅ Extracted — has actual logic
 const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -169,7 +173,9 @@ const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
 
 ## Computed Values
 
-Wrap derived values in `useMemo` when the computation returns a **new reference** (array, object) or is expensive. Without `useMemo`, a new reference is created every render, causing unnecessary re-renders of child components that receive it as a prop.
+Wrap derived values in `useMemo` when the computation returns a **new reference** (array, object) or is expensive. Without `useMemo`, every render creates a new reference. That breaks memoized children (`React.memo`) and re-runs any effect or hook that lists the value as a dependency. Those cases are common and hard to spot later, so memoizing derived arrays and objects is the default.
+
+If the project uses the **React Compiler**, it memoizes automatically. Skip manual `useMemo` there.
 
 ```typescript
 // ❌ Wrong — creates a new array every render, children always re-render
@@ -249,10 +255,10 @@ export function AppLayout({children}: Props) {
 
 ## One Component Per File
 
-Each `.tsx` file contains **exactly one React component** — no exceptions. Every component, no matter how small, gets its own subfolder and file.
+Each `.tsx` file contains **exactly one React component**, and every component gets its own subfolder and file, however small. A reader, or an agent, can then trust that `UserCard.tsx` holds only `UserCard`. Small helpers can be found, moved, reused and tested without untangling them from a parent file. A tiny badge component in a parent file also tends to grow quietly into a big one.
 
 ```typescript
-// ❌ Wrong — two components in one file (even if the helper is not exported)
+// ❌ Wrong: two components in one file (even if the helper is not exported)
 // UserCard.tsx
 function CardBadge({status}: {status: string}) {
   return <span className={status}>{status}</span>;
@@ -396,8 +402,10 @@ export function List<TItem>({items, getKey, renderItem, onSelect}: Props<TItem>)
   return (
     <ul>
       {items.map((item) => (
-        <li key={getKey(item)} onClick={() => onSelect?.(item)}>
-          {renderItem(item)}
+        <li key={getKey(item)}>
+          <button type="button" onClick={() => onSelect?.(item)}>
+            {renderItem(item)}
+          </button>
         </li>
       ))}
     </ul>
@@ -427,15 +435,25 @@ type Props<TValue extends string | number> = {
 };
 
 export function Select<TValue extends string | number>({options, value, onChange}: Props<TValue>) {
+  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedOption = options.find((option) => String(option.value) === event.target.value);
+
+    if (selectedOption) {
+      onChange(selectedOption.value);
+    }
+  };
+
   return (
-    <select value={value} onChange={(event) => onChange(event.target.value as TValue)}>
+    <select value={String(value)} onChange={handleChange}>
       {options.map((option) => (
-        <option key={String(option.value)} value={option.value}>{option.label}</option>
+        <option key={String(option.value)} value={String(option.value)}>{option.label}</option>
       ))}
     </select>
   );
 }
 ```
+
+The DOM always hands back a string. Look the original value up in `options` rather than casting `event.target.value as TValue`: with numeric options, the cast would quietly give the consumer `"3"` instead of `3`.
 
 Key rules:
 - Name type parameters with a **`T` prefix** (`TItem`, `TValue`, `TRow`). A single-letter `T` is fine for one parameter, but multiple parameters become unreadable without descriptive names.

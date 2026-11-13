@@ -30,7 +30,7 @@ These apply regardless of state library:
 
 - Store files use the **`.store.ts`** extension.
 - Store files have **`'use client'`** at the top — stores hold mutable state, run in the browser, and are consumed by client components.
-- Each store exports **two things**: the store instance (or hook factory) and a typed **selector hook** (`useModelStore`) that lets components subscribe to a slice of state.
+- Each store exports **two things**: the store instance and a typed **selector hook** (`useModelStore`) that lets components subscribe to a slice of state. MobX is the exception: it tracks reads automatically, so components are wrapped in `observer` instead (see [MobX](#mobx)).
 - Use **derived/computed values** instead of duplicating state. Most libraries support this via getters, computed selectors, or memoized selectors.
 - Supporting files (`.types.ts`, `.constants.ts`, `.utils.ts`) follow the same conventions as components (see [COMPONENTS.md](COMPONENTS.md#supporting-files)).
 - Only persist properties that need to survive a page refresh — not the entire store.
@@ -57,6 +57,8 @@ export function ModelSelector() {
 ```
 
 The component imports the selector hook for reads and the store instance for writes. Both come from the same `.store.ts` file.
+
+With Zustand, derived values like `activeModel` are selector functions rather than getters, so the read becomes `useModelStore(selectActiveModel)` (see [Zustand](#zustand)).
 
 ## Library Examples
 
@@ -107,10 +109,18 @@ export type Model = {
 export type ModelStoreState = {
   models: Model[];
   activeModelId: string;
-  activeModel: () => Model | undefined;
   setActiveModel: (modelId: string) => void;
   setModels: (models: Model[]) => void;
 };
+```
+
+```typescript
+// modelStore.utils.ts
+import type {Model, ModelStoreState} from './modelStore.types';
+
+export function selectActiveModel(state: ModelStoreState): Model | undefined {
+  return state.models.find((model) => model.id === state.activeModelId);
+}
 ```
 
 ```typescript
@@ -119,23 +129,28 @@ export type ModelStoreState = {
 
 import {create} from 'zustand';
 import {defaultModelId} from './modelStore.constants';
-import type {ModelStoreState} from './modelStore.types';
+import type {Model, ModelStoreState} from './modelStore.types';
 
-export const useModelStore = create<ModelStoreState>((set, get) => ({
+export const useModelStore = create<ModelStoreState>()((set) => ({
   models: [],
   activeModelId: defaultModelId,
-  activeModel: () => get().models.find((model) => model.id === get().activeModelId),
   setActiveModel: (modelId) => set({activeModelId: modelId}),
   setModels: (models) => set({models}),
 }));
 
 export const modelStore = {
   setActiveModel: (modelId: string) => useModelStore.getState().setActiveModel(modelId),
-  setModels: (models) => useModelStore.getState().setModels(models),
+  setModels: (models: Model[]) => useModelStore.getState().setModels(models),
 };
 ```
 
-The `useModelStore` hook itself accepts a selector function, matching the universal selector-hook rule. The `modelStore` object exposes writes for non-React callers. The store-shape type lives in `modelStore.types.ts` — keep shape definitions out of the `.store.ts` file.
+```typescript
+// Consuming
+const activeModel = useModelStore(selectActiveModel);
+const models = useModelStore((store) => store.models);
+```
+
+The `useModelStore` hook accepts a selector function, which satisfies the selector-hook rule. Derived values are selector functions in `modelStore.utils.ts`, not functions stored in state, so they recompute from the current state on every read. The `modelStore` object exposes writes for callers outside React. The store-shape type lives in `modelStore.types.ts`; keep shape definitions out of the `.store.ts` file. The curried `create<State>()(...)` form is what lets TypeScript infer the types when you add middleware such as `persist`.
 
 ### MobX
 
@@ -143,7 +158,6 @@ The `useModelStore` hook itself accepts a selector function, matching the univer
 'use client';
 
 import {makeAutoObservable} from 'mobx';
-import {useLocalObservable} from 'mobx-react-lite';
 import {defaultModelId} from './modelStore.constants';
 import type {Model} from './modelStore.types';
 
@@ -169,13 +183,27 @@ class ModelStore {
 }
 
 export const modelStore = new ModelStore();
-
-export function useModelStore<TSelected>(selector: (store: ModelStore) => TSelected): TSelected {
-  return useLocalObservable(() => ({get value() { return selector(modelStore); }})).value;
-}
 ```
 
-Direct property mutation works because `makeAutoObservable` wires up reactivity in the constructor. Computed values use `get` accessors, same as Classy Store.
+```typescript
+// ModelSelector.tsx
+'use client';
+
+import {observer} from 'mobx-react-lite';
+import {modelStore} from '@/stores/modelStore/modelStore.store';
+
+export const ModelSelector = observer(function ModelSelector() {
+  return (
+    <select value={modelStore.activeModel?.id} onChange={(event) => modelStore.setActiveModel(event.target.value)}>
+      {modelStore.models.map((model) => (
+        <option key={model.id} value={model.id}>{model.name}</option>
+      ))}
+    </select>
+  );
+});
+```
+
+Direct property mutation works because `makeAutoObservable` wires up reactivity in the constructor. Computed values use `get` accessors, as in Classy Store. MobX re-renders a component only when it is wrapped in `observer`, which tracks the observables it reads during render. So instead of a selector hook, wrap each consuming component in `observer` and read the store directly. Without `observer` the component renders once and never updates. Keep the named `function` inside `observer(...)` so the component still shows its name in React DevTools.
 
 ## Persistence
 
@@ -190,12 +218,14 @@ persist(themeStore, {name: 'theme-storage', properties: ['theme']});
 // Zustand
 import {persist} from 'zustand/middleware';
 
-export const useThemeStore = create(
-  persist<ThemeStoreState>(
+export const useThemeStore = create<ThemeStoreState>()(
+  persist(
     (set) => ({theme: 'system', setTheme: (theme) => set({theme})}),
     {name: 'theme-storage', partialize: (state) => ({theme: state.theme})},
   ),
 );
 ```
+
+Use the curried `create<State>()(persist(...))` form. With `partialize`, the non-curried form can't infer the persisted type and fails to type-check.
 
 Persisting derived data, transient UI state, or full server caches is an anti-pattern — keep the persisted surface small.

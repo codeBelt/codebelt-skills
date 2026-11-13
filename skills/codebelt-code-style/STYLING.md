@@ -24,7 +24,7 @@ export function UserCard({user}: Props) {
 }
 ```
 
-Compose long class lists with `clsx` (or any equivalent) when classes are conditional. Avoid building className strings with template literals.
+Use `clsx` (or an equivalent) whenever you combine class sources: conditional classes, classes passed in through a `className` prop, or CSS Module classes. Don't build className strings with template literals, which leave stray spaces and get messy once conditions appear.
 
 ## Global Stylesheet
 
@@ -84,12 +84,13 @@ A typical component uses Tailwind for layout and spacing, and reaches for CSS Mo
 
 ```typescript
 // FeatureCard.tsx
+import clsx from 'clsx';
 import styles from './FeatureCard.module.css';
 
 export function FeatureCard({title, body}: Props) {
   return (
     <article className="rounded-xl border border-gray-200 p-6 shadow-sm">
-      <h2 className={`text-xl font-semibold ${styles.gradient}`}>{title}</h2>
+      <h2 className={clsx('text-xl font-semibold', styles.gradient)}>{title}</h2>
       <p className="mt-2 text-gray-600">{body}</p>
     </article>
   );

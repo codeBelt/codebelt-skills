@@ -282,14 +282,16 @@ Based on the research, here's how each best practice informed our skill design:
 
 ```
 codebelt-code-style/
-├── SKILL.md          # Quick reference + workflows (overview/index)
-├── COMPONENTS.md     # Component patterns, hierarchy, barrel file policy
-├── SERVICES.md       # Service patterns, Zod schemas, TypeScript rules
-├── TESTING.md        # Testing patterns, test.each conventions
-└── MISTAKES.md       # Common mistakes quick-reference
+├── SKILL.md          # Scope check, assumed stack, quick reference, TypeScript rules, workflows (incl. review)
+├── COMPONENTS.md     # Component patterns, tiers, hierarchy, barrel file policy
+├── SERVICES.md       # Service patterns, response validation, Zod schemas
+├── STORES.md         # State stores (Classy Store, Zustand, MobX), persistence
+├── STYLING.md        # Tailwind first, CSS Modules fallback
+├── TESTING.md        # Testing patterns, test.each conventions, components and hooks
+└── MISTAKES.md       # Common mistakes quick-reference (review checklist)
 ```
 
-**Rationale**: Follows Pattern 1 (high-level guide with references) from the best practices. SKILL.md stays under 100 lines as a lean index. Detailed patterns split by domain (components, services, testing, mistakes) so Claude only loads what's relevant.
+**Rationale**: Follows Pattern 1 (high-level guide with references) from the best practices. SKILL.md stays well under 500 lines as an index, and each reference file is listed with *when* to read it. Detailed patterns are split by domain so Claude only loads what's relevant.
 
 ### Decision 2: Description Design
 
@@ -303,6 +305,8 @@ linting, file organization, or naming patterns.
 ```
 
 **Rationale**: Follows the "what it does + when to use it" pattern. Third person. Includes key terms (TypeScript, React, Zod, code style, naming conventions, etc.) for accurate skill selection. Modeled after Vercel's descriptions.
+
+**Revision (2026-11-13)**: Evals showed two gaps. The description left out stores and styling. Worse, it triggered in TypeScript/React codebases with different conventions, where the skill then overrode the project's own style. The description now names stores, styling, React Query and Next.js, is slightly more insistent about triggering, and says to match a codebase's own established conventions. See `SKILL.md` for the current wording.
 
 ### Decision 3: Quick Reference Tables in SKILL.md
 
@@ -333,7 +337,7 @@ Applied to `codebelt-code-style`:
 ### Core Quality
 - [x] Description is specific and includes key terms
 - [x] Description includes both what the skill does and when to use it
-- [x] SKILL.md body is under 500 lines (under 100 lines)
+- [x] SKILL.md body is under 500 lines
 - [x] Additional details are in separate files
 - [x] No time-sensitive information
 - [x] Consistent terminology throughout
@@ -348,7 +352,7 @@ Applied to `codebelt-code-style`:
 - [x] Name is under 64 characters
 - [x] Description is under 1024 characters
 - [x] No extraneous files (README, CHANGELOG, etc.)
-- [x] Reference files have tables of contents
+- [x] Reference files over 100 lines have tables of contents
 - [x] Forward slashes in all file paths
 
 ---

@@ -4,7 +4,7 @@
 
 - [Test Runner](#test-runner)
 - [Test Structure](#test-structure)
-- [test.each with Object Arrays](#testeach-with-object-arrays)
+- [Components and Hooks](#components-and-hooks)
 - [Test File Placement](#test-file-placement)
 
 ## Test Runner
@@ -72,11 +72,21 @@ Key rules:
 - Shared mock data at the top of the file, outside `describe` blocks
 - Type mock data using `import type` from the source types
 
+## Components and Hooks
+
+Keep logic out of components (in `.utils.ts`) so most behavior can be tested as plain functions, which is quicker and less brittle than rendering. When the project has React Testing Library:
+
+- Add `{Component}.test.tsx` for interaction: clicks, form submission, conditional rendering. Query by role or visible text, not by class names.
+- Test hooks with `renderHook` in `use{HookName}.test.ts`.
+- Use `test.each` with object arrays whenever cases differ only in their data.
+
+If React Testing Library isn't installed, test the extracted helpers and say in your reply that component tests need it. Don't add it without asking.
+
 ## Test File Placement
 
 | File | Test File |
 |------|-----------|
-| `UserCard.tsx` | Not directly tested (test utils instead) |
+| `UserCard.tsx` | `UserCard.test.tsx` (interaction only, when Testing Library is available) |
 | `UserCard.utils.ts` | `UserCard.utils.test.ts` |
 | `usersService.schemas.ts` | `usersService.schemas.test.ts` |
 | `hooks/useDebounce/useDebounce.ts` | `hooks/useDebounce/useDebounce.test.ts` |
