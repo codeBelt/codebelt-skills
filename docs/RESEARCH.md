@@ -330,6 +330,27 @@ linting, file organization, or naming patterns.
 
 ---
 
+## Sections Mirrored Between the Two Skills
+
+`codebelt-code-style` (React) and `codebelt-solidjs` (SolidJS) are self-contained on purpose. `npx skills add --skill X` installs only X, skills can't declare dependencies, and a link from one skill into another breaks after install. So shared conventions are copied, not shared. **When you change one of these sections, check the same section in the other skill:**
+
+| Topic | codebelt-code-style | codebelt-solidjs |
+|-------|---------------------|------------------|
+| Scope check ("does this project use CodeBelt style?") | `SKILL.md` | `SKILL.md` (plus the review-judgment rule) |
+| File placement, extensions, naming tables | `SKILL.md` | `SKILL.md` (adds signals, `create`/`use` prefixes, `.context.ts`, `.lazy.ts`) |
+| TypeScript rules, named exports, no barrels | `SKILL.md`, `COMPONENTS.md` | `SKILL.md`, `COMPONENTS.md` |
+| Component tiers and one component per file | `SKILL.md`, `COMPONENTS.md` | `SKILL.md`, `COMPONENTS.md` |
+| Page, utility and service workflows | `SKILL.md` | `SKILL.md` |
+| Reviewing Code workflow | `SKILL.md` | `SKILL.md` (style only, no general bugs) |
+| Service folders, fetch functions, schema naming | `SERVICES.md` | `SERVICES.md` (no React Query; `create{Name}Query` wrappers) |
+| Styling rules | `STYLING.md` (Tailwind first, CSS Modules fallback) | `SKILL.md` Styling section (tool-agnostic: `class`/`classList`, `.module.css` placement) |
+| Test structure, assertions, isolation, placement | `TESTING.md` | `TESTING.md` (adds `createRoot`) |
+| Structure, naming and TypeScript rows | `MISTAKES.md` | `MISTAKES.md` |
+
+The framework-specific parts aren't mirrored: React Query, Next.js and stores in the React skill; component file shape (`props.x`, `<Show>`/`<For>`), route params, context files and `.lazy.ts` in the Solid skill. The Solid skill deliberately covers structure and code shape only, not the Solid API.
+
+---
+
 ## Skill Authoring Checklist
 
 Applied to `codebelt-code-style`:
