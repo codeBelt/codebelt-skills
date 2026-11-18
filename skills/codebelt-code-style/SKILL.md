@@ -115,7 +115,13 @@ Don't use barrel files in application code. They cause import cycles and slow do
 
 ### Component Files
 
-**Put one component in each `.tsx` file**, and give every component its own subfolder, however small it is. Then a file called `UserCard.tsx` holds only `UserCard`. Nobody has to scan files for hidden helper components, and a small piece can be moved, reused or tested without untangling it from its parent. If a function returns JSX and has a capitalized name, it gets its own folder.
+**Put one component in each `.tsx` file**, and give every component its own subfolder, however small it is. Then a file called `UserCard.tsx` holds only `UserCard`. Nobody has to scan files for hidden helper components, and a small piece can be moved, reused or tested without untangling it from its parent. If a function returns JSX and has a capitalized name, it gets its own folder. When to split a piece out is covered below.
+
+### Splitting and Composing Components
+
+Keep markup inline in its parent until splitting it out clearly helps: it has its own state or logic, it's used in more than one place, or the parent has grown past about 200 lines. A few lines of markup used once stay where they are; a separate component for them costs a folder, a file and a `Props` type, and makes the parent harder to read, not easier.
+
+When a component needs variations, let callers pass content in through `children` or props that take JSX (`header`, `footer`), rather than adding a boolean or config prop for each case (see [COMPONENTS.md](COMPONENTS.md#composition-over-flags)).
 
 ---
 

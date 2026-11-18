@@ -10,6 +10,7 @@
 - [Computed Values](#computed-values)
 - [Dynamic Imports](#dynamic-imports)
 - [One Component Per File](#one-component-per-file)
+- [Composition Over Flags](#composition-over-flags)
 - [Supporting Files](#supporting-files)
 - [Page-Level Supporting Files](#page-level-supporting-files)
 - [Polymorphic UI Components](#polymorphic-ui-components)
@@ -300,6 +301,46 @@ userCard/
 └── cardActions/
     └── CardActions.tsx
 ```
+
+## Composition Over Flags
+
+When a component starts collecting a boolean or config prop for every caller (`showFooter`, `footerButtonLabel`, `isCompact`), let callers pass the content in instead. The component keeps the layout; callers decide what goes in it.
+
+```tsx
+// ❌ Wrong: every variation is another prop
+type Props = {
+  title: string;
+  showFooter?: boolean;
+  footerButtonLabel?: string;
+  onFooterButtonClick?: () => void;
+  body: string;
+};
+
+// ✅ Right: callers fill in the pieces
+// ui/panel/Panel.tsx
+type Props = {
+  header?: React.ReactNode;
+  footer?: React.ReactNode;
+  children: React.ReactNode;
+};
+
+export function Panel({header, footer, children}: Props) {
+  return (
+    <section className="rounded border">
+      {header && <div className="p-4 font-semibold">{header}</div>}
+      <div className="p-4">{children}</div>
+      {footer && <footer className="border-t p-4">{footer}</footer>}
+    </section>
+  );
+}
+
+// A caller
+<Panel header="Arrivals" footer={<Button onClick={handleCheckInAll}>Check in all</Button>}>
+  <ArrivalsList arrivals={arrivals} />
+</Panel>
+```
+
+The panel no longer grows a prop for each screen. Keep plain props for real variations of the component itself, such as a `level` or a `variant` union.
 
 ## Supporting Files
 

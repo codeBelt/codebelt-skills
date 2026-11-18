@@ -44,9 +44,9 @@ describe('filterGuests', () => {
 
 ## Reactive Code
 
-- Run stores and other reactive code inside `createRoot` and dispose of the root at the end of each test.
+- Test `create*` functions (query wrappers and other functions that create reactive state) inside `createRoot`, and dispose of the root at the end of each test.
 - In a 2.x package, writes are batched: call `flush()` after an action before asserting on state. In 1.x, reads update immediately (see [the version table](SKILL.md#solid-versions)).
-- Module stores (`.store.ts`) are singletons. Reset them between tests through an exported action, or test the logic in `.utils.ts` instead.
+- Module stores (`.store.ts`) already create their own root when imported, so test them by calling their actions directly. They are singletons: reset them between tests through an exported action, or test the logic in `.utils.ts` instead.
 
 ## Components
 
@@ -77,5 +77,5 @@ If the project has no component testing library, test the extracted helpers and 
 |------|-----------|
 | `GuestCard.utils.ts` | `GuestCard.utils.test.ts` |
 | `GuestCard.tsx` | `GuestCard.test.tsx` (interaction only, when the testing library is available) |
-| `stores/toastStore/toastStore.store.ts` | `stores/toastStore/toastStore.test.ts` |
+| `stores/toastStore/toastStore.store.ts` | `stores/toastStore/toastStore.store.test.ts` |
 | `utils/date/date.ts` | `utils/date/date.test.ts` |

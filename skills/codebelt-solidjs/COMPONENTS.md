@@ -8,6 +8,7 @@ The component file rules and an example are in [SKILL.md](SKILL.md#component-fil
 - [Component Tiers](#component-tiers)
 - [Handlers](#handlers)
 - [One Component Per File](#one-component-per-file)
+- [Composition Over Flags](#composition-over-flags)
 - [Supporting Files](#supporting-files)
 - [Page-Level Supporting Files](#page-level-supporting-files)
 - [Lazy Loading](#lazy-loading)
@@ -113,10 +114,54 @@ guestCard/
     └── VipBadge.tsx
 ```
 
+## Composition Over Flags
+
+When a component starts collecting a boolean or config prop for every caller (`showFooter`, `footerButtonLabel`, `isCompact`), let callers pass the content in instead. The component keeps the layout; callers decide what goes in it.
+
+```tsx
+// ❌ Wrong: every variation is another prop
+type Props = {
+  title: string;
+  showFooter?: boolean;
+  footerButtonLabel?: string;
+  onFooterButtonClick?: () => void;
+  body: string;
+};
+
+// ✅ Right: callers fill in the pieces
+// ui/panel/Panel.tsx
+type Props = {
+  header?: JSX.Element;
+  footer?: JSX.Element;
+  children: JSX.Element;
+};
+
+export function Panel(props: Props) {
+  return (
+    <section class="rounded border">
+      <Show when={props.header}>
+        <div class="p-4 font-semibold">{props.header}</div>
+      </Show>
+      <div class="p-4">{props.children}</div>
+      <Show when={props.footer}>
+        <footer class="border-t p-4">{props.footer}</footer>
+      </Show>
+    </section>
+  );
+}
+
+// A caller
+<Panel header="Arrivals" footer={<Button onClick={handleCheckInAll}>Check in all</Button>}>
+  <ArrivalsList arrivals={arrivals()} />
+</Panel>
+```
+
+The panel no longer grows a prop for each screen. Keep plain props for real variations of the component itself, such as a `level` or a `variant` union.
+
 ## Supporting Files
 
 - **`.types.ts`** holds every type except `Props`: domain shapes, unions, and types shared by the component and its supporting files.
-- **`.constants.ts`** holds static configuration and fixed data only: no signals, browser reads, callbacks or derived values. Anything reactive belongs in the component or a store.
+- **`.constants.ts`** holds static configuration and fixed data only: no signals, browser reads, callbacks or derived values. Anything reactive belongs in the component or a store. Class strings are the exception: they stay in the component, including a variant map (see [Styling](SKILL.md#styling)).
 - **`.utils.ts`** holds pure helpers used only by that component or page, and is where most testable logic lives. Inside a `utils/` folder, the main `{utilName}.ts` file is the utility, so there's no `.utils.ts` there.
 
 ```ts

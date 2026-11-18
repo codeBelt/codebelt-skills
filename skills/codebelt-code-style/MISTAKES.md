@@ -19,6 +19,9 @@ Quick-reference table for code reviews and self-checks. It applies to projects t
 | Constants in component (arrays, objects, primitives) | Extract to `.constants.ts` |
 | Helpers in component | Extract to `.utils.ts` |
 | Multiple components in one `.tsx` file | One component per `.tsx` file — extract all helpers to subfolders |
+| A component past about 200 lines | Split out the parts with their own state or logic |
+| A component extracted for a few lines of markup used once | Keep it inline in the parent |
+| `showFooter`, `footerButtonLabel`… flags added for each caller | `children` and JSX props (`header`, `footer`) that callers fill in (see [COMPONENTS.md](COMPONENTS.md#composition-over-flags)) |
 | Barrel files (`index.ts`) | Direct imports from modules |
 | `export default function` (outside `app/` special files) | `export function` — named exports only. Next.js `layout.tsx`, `page.tsx`, `route.ts`, etc. are the only exceptions (see [SKILL.md](SKILL.md#exports)) |
 | `dynamic(() => import('./Foo'))` | `dynamic(() => import('./Foo').then((mod) => mod.Foo))` — named exports need `.then()` |

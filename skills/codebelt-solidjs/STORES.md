@@ -29,7 +29,7 @@ stores/
     ├── toastStore.types.ts       # Types
     ├── toastStore.constants.ts   # Defaults, storage keys and static data
     ├── toastStore.utils.ts       # Pure helpers, such as parsing a stored value (optional)
-    └── toastStore.test.ts
+    └── toastStore.store.test.ts
 ```
 
 ## Store File Shape
