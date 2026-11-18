@@ -7,8 +7,10 @@ The review and self-check list for projects that use this guide. In a codebase w
 | Wrong | Right |
 |-------|-------|
 | Multiple components in one `.tsx` file | One component per file, each in its own subfolder |
+| A component past about 200 lines | Split out the parts with their own state or logic |
+| A component extracted for a few lines of markup used once | Keep it inline in the parent |
 | Types other than `Props` in the component file | Move them to `.types.ts` |
-| Constants (arrays, objects, strings, numbers) in the component file | Extract them to `.constants.ts` |
+| Constants (arrays, objects, strings, numbers) in the component file | Extract them to `.constants.ts`. The one exception is a map of class strings for variants, which stays in the component file (see [SKILL.md](SKILL.md#styling)) |
 | Helpers in the component file | Extract them to `.utils.ts` |
 | `utils/date/date.utils.ts` | `utils/date/date.ts` |
 | A domain-neutral component under `shared/` | Move it to `ui/` |
@@ -30,6 +32,7 @@ The review and self-check list for projects that use this guide. In a codebase w
 | `if (!props.guest) return null;` at the top of a component | `<Show when={props.guest}>...</Show>`: no early returns |
 | `{isOpen() && <Panel />}` or a ternary for a whole branch of markup | `<Show when={isOpen()}><Panel /></Show>` |
 | `{items().map((item) => <Row item={item} />)}` in JSX | `<For each={items()}>{(item) => <Row item={item} />}</For>` |
+| `showFooter`, `footerButtonLabel`… flags added for each caller | `children` and JSX props (`header`, `footer`) that callers fill in (see [COMPONENTS.md](COMPONENTS.md#composition-over-flags)) |
 | A wrapper function around a simple forwarded call | Inline it: `onClick={() => props.onDeleteBooking(bookingId)}` |
 
 ## Naming

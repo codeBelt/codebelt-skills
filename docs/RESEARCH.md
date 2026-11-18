@@ -340,6 +340,7 @@ linting, file organization, or naming patterns.
 | File placement, extensions, naming tables | `SKILL.md` | `SKILL.md` (adds signals, `create`/`use` prefixes, `.context.ts`, `.lazy.ts`) |
 | TypeScript rules, named exports, no barrels | `SKILL.md`, `COMPONENTS.md` | `SKILL.md`, `COMPONENTS.md` |
 | Component tiers and one component per file | `SKILL.md`, `COMPONENTS.md` | `SKILL.md`, `COMPONENTS.md` |
+| Splitting and composing components (when to split, composition over flags) | `SKILL.md`, `COMPONENTS.md`, `MISTAKES.md` | `SKILL.md`, `COMPONENTS.md`, `MISTAKES.md` |
 | Page, utility and service workflows | `SKILL.md` | `SKILL.md` |
 | Reviewing Code workflow | `SKILL.md` | `SKILL.md` (style only, no general bugs) |
 | Service folders, fetch functions, schema naming | `SERVICES.md` | `SERVICES.md` (no React Query; `create{Name}Query` wrappers) |

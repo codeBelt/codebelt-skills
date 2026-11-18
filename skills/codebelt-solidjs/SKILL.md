@@ -123,7 +123,7 @@ Use **named exports** only. A named export is imported under the same name every
 
 ### Component Files
 
-**Put one component in each `.tsx` file**, and give every component its own subfolder, however small it is. Then a file called `GuestCard.tsx` holds only `GuestCard`, and a small piece can be moved, reused or tested without untangling it from its parent. Keep components under about 200 lines; past that, split out children.
+**Put one component in each `.tsx` file**, and give every component its own subfolder, however small it is. Then a file called `GuestCard.tsx` holds only `GuestCard`, and a small piece can be moved, reused or tested without untangling it from its parent. When to split a piece out is covered in [Splitting and Composing Components](#splitting-and-composing-components).
 
 A component file holds only three things: its imports, its local `type Props` and the component itself. `Props` is the **only** type in the file: always named `Props`, never exported. Every other type goes in `{ComponentName}.types.ts`, constants in `{ComponentName}.constants.ts` and helpers in `{ComponentName}.utils.ts`.
 
@@ -154,6 +154,12 @@ export function GuestCard(props: Props) {
 - Read props as `props.x` wherever they're used, in the signature and the body alike; never destructure them. This is the main visible difference from CodeBelt's React guide, which destructures in the signature.
 - Put conditional markup in `<Show>` or `<Switch>` and lists in Solid's list components (`<For>`, plus `<Index>` in 1.x or `<For keyed={false}>` in 2.x). No early returns and no `.map()` in JSX. Ternaries are fine for small inline values.
 - Signals, memos and handlers live inside the component. Inline a handler that only forwards a call; extract a `handle*` function when it has real logic.
+
+### Splitting and Composing Components
+
+Keep markup inline in its parent until splitting it out clearly helps: it has its own state or logic, it's used in more than one place, or the parent has grown past about 200 lines. A few lines of markup used once stay where they are; a separate component for them costs a folder, a file and a `Props` type, and makes the parent harder to read, not easier.
+
+When a component needs variations, let callers pass content in through `children` or props that take JSX (`header`, `footer`), rather than adding a boolean or config prop for each case (see [COMPONENTS.md](COMPONENTS.md#composition-over-flags)).
 
 ### Styling
 
