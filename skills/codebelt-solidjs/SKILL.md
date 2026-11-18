@@ -27,14 +27,14 @@ The guide assumes:
 - Optionally, a schema validation library for API responses (Zod, Valibot, ArkType or similar)
 - Bun, Vitest or Jest for tests
 
-Use the router, UI library, icon set, styling approach, HTTP client, fetching library, validator and test runner the project already has, and only those. When the project uses ESLint, it should include `eslint-plugin-solid` with its recommended rules, which catch destructured props and similar mistakes automatically. Suggest it when it's missing, and add it only if the user agrees.
+Use the router, UI library, icon set, styling approach, HTTP client, fetching library, validator and test runner the project already has, and only those. When the project uses ESLint, it should include `eslint-plugin-solid`, which catches destructured props and similar mistakes automatically: the `recommended` config in a 1.x package, the `v2` config (`eslint-plugin-solid/configs/v2`, which needs ESLint 9+ and Node 22+) in a 2.x package. Suggest it when it's missing, and add it only if the user agrees.
 
 ## Solid Versions
 
 A repository can hold packages on different Solid versions, for example a monorepo with one app on 1.x and another on 2.x. Settle the version before writing or reviewing any Solid code:
 
 1. **Read the version for the package you're working in**, from the `package.json` nearest to the file, not the repository root. If it says `catalog:`, `workspace:` or a range you can't resolve, read the installed version from that package's `node_modules/solid-js/package.json` or from the lockfile.
-2. **Apply the structure rules in every version.** File placement, naming, file contents and component file shape are the same in 1.x and 2.x. The code examples in this guide use 1.x syntax; the syntax in them is incidental.
+2. **Apply the structure rules in every version.** File placement, naming, file contents and component file shape are the same in 1.x and 2.x. The code examples in this guide use 2.x syntax, and the table below gives the 1.x forms; the syntax in them is incidental.
 3. **In a 2.x package, use the 2.x forms in the table below, and look up any other Solid API you aren't sure is unchanged**, in the Solid 2 migration guide and the package's existing code. Most Solid code you have seen is 1.x, so when in doubt, check rather than write from memory.
 4. **Write Solid code for one version per package.** Never copy Solid code between packages on different versions, and never mix 1.x and 2.x APIs in one package. Types, schemas, utils and fetch functions contain no Solid code, so they look the same in both.
 
@@ -44,13 +44,13 @@ Where this guide's own rules use an API that differs between versions:
 |------------|-----|-----|
 | Conditional classes, never string building | `class="btn" classList={{active: isActive()}}` | `class={['btn', {active: isActive()}]}` (`classList` is removed) |
 | Lists of strings or numbers, or keyed by position | `<Index each={...}>` | `<For each={...} keyed={false}>` (`<Index>` is removed) |
-| Store actions write through the setter | Path setter: `setState('toasts', (previousToasts) => [...previousToasts, toast])` | Draft setter: `setState((state) => { state.toasts.push(toast); })` |
+| Store actions write through the setter | Path setter: `setState('toasts', (previousToasts) => [...previousToasts, toast])` | Draft setter: `setState((draft) => { draft.toasts.push(toast); })` |
 | Store imports | `createStore` from `solid-js/store` | `createStore` from `solid-js` |
 | Providers in their own `.tsx` file | `<BookingWizardContext.Provider value={value}>` | `<BookingWizardContext value={value}>` (`.Provider` is removed) |
 | `use{Name}` function that throws when the provider is missing | Check for `undefined` and throw | Keep the function, so every consumer imports the same name; `useContext` on a context without a default already throws, so the explicit check can go |
 | Tests read state right after an action | Reads update immediately | Writes are batched: call `flush()` before asserting |
 
-This table is checked against the Solid 2.0 release-candidate migration guide (`solid-js@2.0.0-rc.21`). Until 2.0 is stable, the docs and the package's own code win over the table.
+This table is checked against the stable Solid 2.0 migration guide (`solid-js@2.0.1`). If the docs or the package's own code disagree with it, they win.
 
 ## Quick Reference
 
@@ -97,6 +97,7 @@ To choose between `ui/`, `shared/` and `pages/`, follow [Choosing a Component Ti
 | Signals | Noun for the getter, `set` + noun for the setter | `const [count, setCount] = createSignal(0)` |
 | Memos and derived values | Noun, no `get` prefix | `const visibleGuests = createMemo(...)` |
 | Updater function args | `previous` prefix | `setCount((previousCount) => previousCount + 1)` |
+| Store draft setter args (2.x) | `draft` | `setState((draft) => { draft.toasts.push(toast); })` |
 | Functions that create reactive state | `create` prefix | `createGuestsQuery` |
 | Functions that read a context | `use` prefix | `useTheme()` |
 | Internal handlers | `handle` prefix | `handleSubmit`, `handleFilterChange` |

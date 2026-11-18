@@ -45,7 +45,7 @@ describe('filterGuests', () => {
 ## Reactive Code
 
 - Run stores and other reactive code inside `createRoot` and dispose of the root at the end of each test.
-- In a 2.x package, check the test-timing row in [the version table](SKILL.md#solid-versions) before asserting on state after an action.
+- In a 2.x package, writes are batched: call `flush()` after an action before asserting on state. In 1.x, reads update immediately (see [the version table](SKILL.md#solid-versions)).
 - Module stores (`.store.ts`) are singletons. Reset them between tests through an exported action, or test the logic in `.utils.ts` instead.
 
 ## Components

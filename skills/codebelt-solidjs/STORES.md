@@ -1,6 +1,6 @@
 # Store Patterns
 
-Where state lives, and how store and context files are laid out. The examples use 1.x syntax; for the 2.x store setter, import and provider, see [Solid Versions](SKILL.md#solid-versions).
+Where state lives, and how store and context files are laid out. The examples use 2.x syntax; for the 1.x store setter, import and provider, see [Solid Versions](SKILL.md#solid-versions).
 
 ## Table of Contents
 
@@ -36,8 +36,7 @@ stores/
 
 ```ts
 // toastStore.store.ts
-import {createRoot} from 'solid-js';
-import {createStore} from 'solid-js/store';
+import {createRoot, createStore} from 'solid-js';
 import type {Toast, ToastState} from './toastStore.types';
 
 const store = createRoot(() => {
@@ -49,16 +48,20 @@ const store = createRoot(() => {
 export const toastState = store.state;
 
 export function showToast(toast: Toast): void {
-  store.setState('toasts', (previousToasts) => [...previousToasts, toast]);
+  store.setState((draft) => {
+    draft.toasts.push(toast);
+  });
 }
 
 export function dismissToast(toastId: string): void {
-  store.setState('toasts', (previousToasts) => previousToasts.filter((toast) => toast.id !== toastId));
+  store.setState((draft) => {
+    draft.toasts = draft.toasts.filter((toast) => toast.id !== toastId);
+  });
 }
 ```
 
 - **Export read-only state and named action functions; never export the setter.** Every write then goes through a named action, so one search finds every change to the state.
-- Module-level reactive code sits inside `createRoot`, as above.
+- Module-level reactive code sits inside `createRoot`, as above. That marks it as intentional client-only state, and it's what `eslint-plugin-solid`'s `v2-strict` config expects.
 - Types go in `.types.ts`, defaults and storage keys in `.constants.ts`, and pure helpers (such as parsing a value read back from storage) in `.utils.ts`.
 - Components import state and actions straight from the `.store.ts` file and read the store directly, so it stays the single source of truth.
 
@@ -73,14 +76,9 @@ import type {BookingWizardContextValue} from './BookingWizardProvider.types';
 
 export const BookingWizardContext = createContext<BookingWizardContextValue>();
 
+// useContext throws when no provider is mounted (in 1.x, check for undefined and throw yourself)
 export function useBookingWizard(): BookingWizardContextValue {
-  const context = useContext(BookingWizardContext);
-
-  if (!context) {
-    throw new Error('useBookingWizard must be used inside <BookingWizardProvider>');
-  }
-
-  return context;
+  return useContext(BookingWizardContext);
 }
 ```
 
@@ -92,5 +90,5 @@ bookingWizardProvider/
 └── BookingWizardProvider.constants.ts
 ```
 
-- Consumers call `use{Name}()`, never `useContext` directly. The function throws a clear error when the provider is missing, so nobody writes `useContext(...)!`.
+- Consumers call `use{Name}()`, never `useContext` directly, so every consumer imports the same name and nobody writes `useContext(...)!`.
 - The context value exposes state and named actions, not the raw setter, as with module stores.
